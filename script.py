@@ -22,23 +22,17 @@ def draw_graphs(nrows, ncols, data, side):
     sizes = []
     fig, axes = plt.subplots(nrows, ncols, sharex=True,  sharey=True, figsize=(40,24))
     plt.subplots_adjust(wspace=0.02, hspace=0.04, left=0.02, right=0.99, bottom=0.02, top=0.95)
-    plt.suptitle(f"Distribution of {side}-orders sizes depending on price and time of a snapshot (4 lines correspond to 4 snapshots specified in an upper right corner)")
+    plt.suptitle(f"Distribution of {side} sizes depending on price (4 lines correspond to 4 snapshots specified in an upper right corner)")
     axes = axes.ravel()
-    for i in range(len(orders)):
+    for i in range(len(data)):
         axes[i//4].spines['right'].set_visible(False)
         axes[i//4].spines['top'].set_visible(False)
-        for j in orders[side][i]:
+        for j in data[side][i]:
             prices.append(j['price'])
             sizes.append(j['size'])
-        axes[i//4].plot(prices, sizes, alpha=0.4, color='blue', linewidth=0.5, label='actual price of BUY-trades bigger than 10ETH')
+        axes[i//4].plot(prices, sizes, alpha=0.4, color='blue', linewidth=0.5, label=data.loc[i, "timestamp"].strftime('%m-%d %H:%M'))
+        axes[i//4].legend(fontsize= 5, loc='upper right')
         axes[i//4].tick_params(axis='both', which='major', labelsize=6)
-        snapshot_number = 0
-        if i//4 == (i+1)//4:
-            time1 = orders.loc[snapshot_number, "timestamp"]
-            time2 = orders.loc[snapshot_number+3, "timestamp"]
-            axes[snapshot_number].legend(title=time1.strftime('%m-%d %H:%M')+' - '+time2.strftime('%m-%d %H:%M'), title_fontsize= 5, loc='upper right')
-        else:
-            snapshot_number += 1
         prices = []
         sizes = []
     axes[47].tick_params(labelsize=6)
@@ -46,15 +40,38 @@ def draw_graphs(nrows, ncols, data, side):
 
 draw_graphs(nrows=8, ncols=6, data=orders, side='asks')
 draw_graphs(nrows=8, ncols=6, data=orders, side='bids')
-orders_trade16_33_30_deleted = orders[orders.timestamp != '2025-09-03 16:33:30.943424800+00:00']
-draw_graphs(nrows=8, ncols=6, data=orders_trade16_33_30_deleted, side='asks')
+orders_trade16_33deleted = orders[orders.timestamp != '2025-09-03 16:33:30.943424800+00:00']
+orders_trade16_33deleted = orders_trade16_33deleted.reset_index(drop=True)
+print(orders['asks'][181:])
+print(orders_trade16_33deleted['asks'][181:])
+draw_graphs(nrows=8, ncols=6, data=orders_trade16_33deleted, side='asks')
+
+buy_trades = trades[trades['side'] == 'BUY']
+sell_trades = trades[trades['side'] == 'SELL']
+print("max sell-trade:", np.max(sell_trades['size']), "ETH; ", "total volume of sell-trades:", np.sum(sell_trades['size']), "ETH")
+print("max buy-trade:", np.max(buy_trades['size']), "ETH; ", "total volume of buy-trades:", np.sum(buy_trades['size']), "ETH")
+
+buy_trades_less_001ETH = buy_trades[buy_trades['size'] <= 0.01]
+buy_trades_between001_01ETH = buy_trades[(buy_trades['size'] <= 0.1) & (buy_trades['size'] > 0.01)]
+buy_trades_between01_1ETH = buy_trades[(buy_trades['size'] <= 1) & (buy_trades['size'] > 0.1)]
+buy_trades_between1_10ETH = buy_trades[(buy_trades['size'] <= 10) & (buy_trades['size'] > 1)]
+buy_trades_between10_100ETH = buy_trades[(buy_trades['size'] <= 100) & (buy_trades['size'] > 10)]
+buy_trades_more100ETH = buy_trades[buy_trades['size'] > 100]
+print("number of buy-trades less than 0.01ETH:", len(buy_trades_less_001ETH), ", volume:", np.sum(buy_trades_less_001ETH['size']))
+print("number of buy-trades between 0.01 - 0.1ETH:", len(buy_trades_between001_01ETH), ", volume:", np.sum(buy_trades_between001_01ETH['size']))
+print("number of buy-trades between 0.1 - 1ETH:", len(buy_trades_between01_1ETH), ", volume:", np.sum(buy_trades_between01_1ETH['size']))
+print("number of buy-trades between 1 - 10ETH:", len(buy_trades_between1_10ETH), ", volume:", np.sum(buy_trades_between1_10ETH['size']))
+print("number of buy-trades between 10 - 100ETH:", len(buy_trades_between10_100ETH), ", volume:", np.sum(buy_trades_between10_100ETH['size']))                  
+print("number of buy-trades exceeding 100ETH:", len(buy_trades_more100ETH), ", volume:", np.sum(buy_trades_more100ETH['size']))
+
+buy_trades_less_10ETH = buy_trades[buy_trades['size'] <= 10]
+buy_trades_exceeding_10ETH = buy_trades[buy_trades['size'] > 10]
+print("number of buy-trades less than 10ETH:", len(buy_trades_less_10ETH), ", volume:", np.sum(buy_trades_less_10ETH['size']))
+print("number of buy-trades exceeding 10ETH:", len(buy_trades_exceeding_10ETH), ", volume:", np.sum(buy_trades_exceeding_10ETH['size']))
 
 orders['best_price_asks'] = None
 orders['best_price_bids'] = None
 orders['average_price_asks'] = None
-buy_trades = trades[trades['side'] == 'BUY']
-sell_trades = trades[trades['side'] == 'SELL']
-
 asks_price = []
 bids_price = []
 for _, row in buy_trades.iterrows():
@@ -80,18 +97,12 @@ for _, row in buy_trades.iterrows():
         orders.loc[i, 'best_price_bids'] = np.max(bids_price)
         bids_price = []
 
-print(len(buy_trades))
-trades_less_10ETH = buy_trades[buy_trades['size'] <= 10]
-trades_bigger_10ETH = buy_trades[buy_trades['size'] > 10]
-print(len(trades_less_10ETH))
-print(len(trades_bigger_10ETH))                  
-
 fig, ax = plt.subplots(nrows=1, ncols=1,  figsize=(18,12))
 plt.suptitle("Price in buy-trades compared to best and average price of asks")
+ax.plot(buy_trades_exceeding_10ETH['timestamp'], buy_trades_exceeding_10ETH['price'], color='red', linewidth=0.4, alpha=0.7, label='actual price of BUY-trades exceeding 10ETH')
+ax.plot(buy_trades_less_10ETH['timestamp'], buy_trades_less_10ETH['price'], color='red', linewidth=0.7, label='actual price of BUY-trades less than 10ETH')
 ax.plot(orders['timestamp'], orders['best_price_asks'], color='green', linewidth=0.5, label='best ASK-price from orderbook`s snapshots')
-ax.plot(orders['timestamp'], orders['average_price_asks'], color='black', linewidth=0.5, label='average ASK-price from orderbook`s snapshots')
-ax.plot(buy_trades_bigger_10ETH['timestamp'], buy_trades_bigger_10ETH['price'], color='red', linewidth=0.5, label='actual price of BUY-trades bigger than 10ETH')
-ax.plot(buy_trades_less_10ETH['timestamp'], buy_trades_less_10ETH['price'], color='blue', linewidth=0.5, label='actual price of BUY-trades less than 10ETH')
+ax.plot(orders['timestamp'], orders['average_price_asks'], color='blue', linewidth=0.5, label='average ASK-price from orderbook`s snapshots')
 ax.legend(loc='upper right', fontsize=8)
 ax.spines['right'].set_visible(False)
 ax.spines['top'].set_visible(False)
