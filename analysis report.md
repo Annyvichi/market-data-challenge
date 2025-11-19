@@ -5,7 +5,7 @@
 ### Anomaly with bids- and asks-lists in the Orderbook.
 The first acquaintance with the orderbook shows that the length of bids- and asks-lists is the same in every snapshot and is always equal to 50. If there is no any limit on the length, it raises suspicion.
 
-### Orderbook is too different from what was happenning on the buy-side of the market.
+### The orderbook does not reflect the market situation.
 Visual assessment of distribution of bid- and ask-orders shows that almost all of the orderbook's asks are close to 0, there is only one exeption - on the penultimate graph. 
 ![Distribution of ask-orders sizes](orderbook_ask_distribution.png)
 ![Distribution of bid-orders sizes](orderbook_bid_distribution.png)
