@@ -97,7 +97,7 @@ for _, row in buy_trades.iterrows():
         bids_price = []
 
 fig, ax = plt.subplots(nrows=1, ncols=1,  figsize=(18,12))
-plt.suptitle("Price in buy-trades compared to best and average price of asks")
+plt.suptitle("Price in buy-trades compared to best and average ask-price from snapshots")
 ax.plot(buy_trades_exceeding_10ETH['timestamp'], buy_trades_exceeding_10ETH['price'], color='red', linewidth=0.4, alpha=0.7, label='actual price of BUY-trades exceeding 10ETH')
 ax.plot(buy_trades_less_10ETH['timestamp'], buy_trades_less_10ETH['price'], color='red', linewidth=0.7, label='actual price of BUY-trades less than 10ETH')
 ax.plot(orders['timestamp'], orders['best_price_asks'], color='green', linewidth=0.5, label='best ASK-price from orderbook`s snapshots')
