@@ -71,8 +71,8 @@ print("number of buy-trades exceeding 10ETH:", len(buy_trades_exceeding_10ETH), 
 orders['best_price_asks'] = None
 orders['best_price_bids'] = None
 orders['average_price_asks'] = None
-asks_price = []
-bids_price = []
+asks_price_i = []
+bids_price_i = []
 for _, row in buy_trades.iterrows():
     for i, item in orders.iterrows():
         if (row['timestamp'] - item['timestamp']).seconds == 86399:
@@ -87,14 +87,10 @@ for _, row in buy_trades.iterrows():
                 print("time interval:", (row['timestamp'] - item['timestamp']).seconds, "sec.")
                 print("size of trade:", row['size'], "ETH")
         for j in item['asks']:
-           asks_price.append(j['price'])
-        orders.loc[i, 'best_price_asks'] = np.min(asks_price)
-        orders.loc[i, 'average_price_asks'] = np.mean(asks_price)   
-        asks_price = []
-        for k in item['bids']:
-            bids_price.append(k['price'])
-        orders.loc[i, 'best_price_bids'] = np.max(bids_price)
-        bids_price = []
+           asks_price_i.append(j['price'])
+        orders.loc[i, 'best_price_asks'] = np.min(asks_price_i)
+        orders.loc[i, 'average_price_asks'] = np.mean(asks_price_i)   
+        asks_price_i = []
 
 fig, ax = plt.subplots(nrows=1, ncols=1,  figsize=(18,12))
 plt.suptitle("Price in buy-trades compared to best and average ask-price from snapshots")
@@ -102,6 +98,34 @@ ax.plot(buy_trades_exceeding_10ETH['timestamp'], buy_trades_exceeding_10ETH['pri
 ax.plot(buy_trades_less_10ETH['timestamp'], buy_trades_less_10ETH['price'], color='red', linewidth=0.7, label='actual price of BUY-trades less than 10ETH')
 ax.plot(orders['timestamp'], orders['best_price_asks'], color='green', linewidth=0.5, label='best ASK-price from orderbook`s snapshots')
 ax.plot(orders['timestamp'], orders['average_price_asks'], color='blue', linewidth=0.5, label='average ASK-price from orderbook`s snapshots')
+ax.legend(loc='upper right', fontsize=8)
+ax.spines['right'].set_visible(False)
+ax.spines['top'].set_visible(False)
+ax.set_ylabel('Price, ETH/BTC', fontsize=8)
+ax.set_xlabel('Time', fontsize=8)
+ax.grid()
+ax.tick_params(axis='both', which='major', labelsize=6)
+plt.show()
+
+ask_prices = np.ones((50, len(orders)), float)
+bid_prices = np.ones((50, len(orders)), float)
+for i, item in orders.iterrows():
+    for n, value in enumerate(item['asks']):
+        asks_price_i.append(value['price'])
+        ask_prices[n][i] = value['price']
+    for m, val in enumerate(item['bids']):
+        bids_price_i.append(val['price'])
+        bid_prices[m][i] = val['price']
+    asks_price_i = []
+    bids_price_i = []
+
+fig, ax = plt.subplots(nrows=1, ncols=1,  figsize=(18,12))
+plt.suptitle("Ask- and bid-prices against the actual buy- and sell-price")
+ax.plot(buy_trades['timestamp'], buy_trades['price'], color='red', linewidth=0.6, alpha=0.7, label='actual price of buy-trades')
+ax.plot(sell_trades['timestamp'], sell_trades['price'], color='blue', linewidth=0.6, alpha=0.7, label='actual price of sell-trades')
+for i in range(50):
+    ax.plot(orders['timestamp'], ask_prices[i], color='cyan', linewidth=0.4)
+    ax.plot(orders['timestamp'], bid_prices[i], color='gold', linewidth=0.4)
 ax.legend(loc='upper right', fontsize=8)
 ax.spines['right'].set_visible(False)
 ax.spines['top'].set_visible(False)
