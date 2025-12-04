@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib.ticker
 import ast
+from collections import Counter
 
 trades = pd.read_csv('eth-btc-trades.csv')
 orders = pd.read_csv('eth-btc-orderbooks.csv')
@@ -134,3 +135,19 @@ ax.set_xlabel('Time', fontsize=8)
 ax.grid()
 ax.tick_params(axis='both', which='major', labelsize=6)
 plt.show()
+
+def step_count(lst):
+    step = []
+    steps = []
+    for m in range(len(lst)):
+        for k in range(50):
+            if k > 0:
+                step.append(lst[k-1][m] - lst[k][m])
+        step_count = Counter(step)
+        step_count = sorted(step_count.items(), key=lambda item: item[1], reverse=True)
+        prevailing_steps = step_count[:5]
+        steps.append(dict(prevailing_steps))
+        step = []
+    return steps            
+print(step_count(lst=ask_prices))            
+print(step_count(lst=bid_prices))

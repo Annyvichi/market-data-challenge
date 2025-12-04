@@ -7,12 +7,12 @@ The first acquaintance with the orderbook shows that the length of bids- and ask
 
 ### The orderbook does not reflect the actual trading volume on the market.
 Visual assessment of distribution of bid- and ask-orders shows that almost all of the orderbook's asks are close to 0, there is only one exeption - on the penultimate graph. 
-![picture 1: Distribution of ask-orders sizes](orderbook_ask_distribution.png)
-![picture 2: Distribution of bid-orders sizes](orderbook_bid_distribution.png)
+![figure 1: Distribution of ask-orders sizes](orderbook_ask_distribution.png)
+![figure 2: Distribution of bid-orders sizes](orderbook_bid_distribution.png)
 This exeption can be found in the 6th from the end snapshot: '2025-09-03 16:33:30.943424800 ... {'price': 0.03984, 'size': 199.665}, ...'
 After looking for it in the 'eth-btc-trades.csv' it was found out that this aks-order was bought at exactly 16:33:30 - the same minute and second it was placed in the orderbook.
 It can be seen at the next picture how the ask-distribution looks when '16:33:30'-snapshot is deleted.
-![picture 3: Distribution of ask-orders sizes with '16:33:30'-snapshot deleted](orderbook_ask_distr_16_33deleted.png)
+![figure 3: Distribution of ask-orders sizes with '16:33:30'-snapshot deleted](orderbook_ask_distr_16_33deleted.png)
 
 The next step was checking the max-values of buy- and sell-trades as well as their distribution.
 There were 720 BUY-trades and 125 sell-trades totally.
@@ -66,12 +66,12 @@ The conclusion of this paragraph is: the prevailed majority of buy-trades was mo
 ### Price in buy-trades against the best and average ask-price from orderbook's snapshots.
 If 677 out of 678 buy-transactions exceeding 10ETH were executed so quickly that they were out of the orderbook's snapshots the quiestion is: what was their price? Was it always the best price?
 The picture below shows the best (green line) and the average (blue line) ask-price from the orderbook's snapshots against the actual price of the buy-trades (red lines).
-![picture 4: Price in buy-trades compared to best and average ask-price from snapshots](price.png)
+![figure 4: Price in buy-trades compared to best and average ask-price from snapshots](price.png)
 The actual buy-price is really better than what can be seen in the orderbook's snapshots most of the time. Which can be a normal market behaviour, though it looks like guys with the best price are always so close... It seems reasonable to check the rest ask-prices. But the suspicious part here is this: if selling ETH was so successful that all huge offers were bought so quickly, why not to try to sell it at a higher price - place an order into the orderbook and wait for a while? Not even once out of 678 times?
 
 ### Ask- and bid-prices from orderbook's snapshots compared to each other.
 To explore the premice from the previous paragraph, all 50 asks and 50 bids (as it was mentioned in the beginning the lenght of orderbook's lists is 50) at every timestamp were visualized. The lowest ask-line (light blue) is the best ask-price at different timestampes, the highest ask-line is the least competitive ask-price. And it's vice versa with the bid-lines (yellow).
-![picture 5: Bid-prices against the actual sell-price](bid-prices.png)
+![figure 5: Bid-prices against the actual sell-price](bid-prices.png)
 
 It can be seen that ask-lines and bid-lines shift relative to some level from time to time, almost all of them. It is because the majority of asks and bids is mostly the same, so for example when a new ask is added to a list which is almost the same (or removed from a list) - all higher ask-offers shift on one level.
 But ask- and bid-lines shift back to the same levels from time to time as well.
@@ -96,41 +96,14 @@ Bid-prices from snapshots:
 
 2025-09-01 14:32:14 ... {'price': 0.0377, 'size': 0.00311485}, {'price': 0.03763159, 'size': 0.02189266}, {'price': 0.0376, 'size': 0.00438429}, {'price': 0.03759, 'size': 0.00205824}]"
 The list is truncated at 05:05 and partially at 08:07-snapshot, but at 03:52 and 14:32 longer versions can be seen.
-The same pattern can be observed at picture 5 between September 1 11p.m. and September 2 02a.m., also on September 2 between 06a.m. and 01p.m.(I checked the lists - they are truncated in the same way). So bid-lists the same as ask-lists are truncated from the ending.
+The same pattern can be observed at figure 5 between September 1 11p.m. and September 2 02a.m., also on September 2 between 06a.m. and 01p.m.(I checked the lists - they are truncated in the same way). So bid-lists the same as ask-lists are truncated from the ending.
 
-There is another pattern at the initial parts of the bid-lists, which I think contradicts normal market behaviour: 
-2025-09-02 14:36:07 ... {'price': 0.03939782, 'size': 0.00229782}, {'price': 0.0393, 'size': 0.00261679}, {'price': 0.03925777, 'size': 0.00246826}, {'price': 0.0392, 'size': 0.00287474}, {'price': 0.0391, 'size': 0.0028757}, {'price': 0.03907353, 'size': 0.04093716}, {'price': 0.03900577, 'size': 0.01444284}, 
-{'price': 0.0390001, 'size': 0.00027}, ... 
-{'price': 0.0389, 'size': 0.00287763}, {'price': 0.03885, 'size': 0.00025997}...
-
-2025-09-03 03:25 {'price': 0.0390001, 'size': 0.00027}, ... {'price': 0.0389, 'size': 0.00287763}, {'price': 0.03885, 'size': 0.00025997}...
-
-2025-09-03 15:56 ... {'price': 0.03939782, 'size': 0.00230517}, {'price': 0.0393, 'size': 0.00254605}, {'price': 0.03925777, 'size': 0.00247084}, {'price': 0.0392, 'size': 0.00255229}, {'price': 0.0391, 'size': 0.00255882}, 
-{'price': 0.0389, 'size': 0.00025964}, {'price': 0.03885, 'size': 0.00025997}...
-
-At 03:25 the best bid-price is low - the market price was low at that timestamp, so bid price dropped either, but in the last snapshot (when market price recovered) the prices from the first snapshot are back.
-
-Comparing snapshots on a longer timeframe shows that more removed bid-prices were restored:
-2025-09-01 20:01:09 ... {'price': 0.0398, 'size': 0.00251407}, {'price': 0.0397, 'size': 0.0025204}, {'price': 0.03968253, 'size': 0.00293983}, {'price': 0.0395, 'size': 0.0026162}, {'price': 0.0394, 'size': 0.01482199}, 
-{'price': 0.03939782, 'size': 0.00229782}, {'price': 0.0393, 'size': 0.00261679}, {'price': 0.03925777, 'size': 0.00246826}, {'price': 0.0392, 'size': 0.00287474}, {'price': 0.0391, 'size': 0.0028757}, {'price': 0.03907353, 'size': 0.04093716}, {'price': 0.03900577, 'size': 0.01444284}, {'price': 0.0390001, 'size': 0.00027}, {'price': 0.039, 'size': 0.00287435}, 
-{'price': 0.0389, 'size': 0.00287763}, {'price': 0.03885, 'size': 0.00025997}...
-
-2025-09-03 20:50:36 {'price': 0.0398, 'size': 0.0032}, {'price': 0.0397, 'size': 0.0032}, {'price': 0.0396, 'size': 0.00688878}, {'price': 0.03950495, 'size': 0.0032}, 
-{'price': 0.03939782, 'size': 0.00230517}, {'price': 0.0393, 'size': 0.00254605}, {'price': 0.03925777, 'size': 0.00247084}, {'price': 0.0392, 'size': 0.00255229}, {'price': 0.0391, 'size': 0.00255882}, 
-{'price': 0.0389, 'size': 0.00025964}, {'price': 0.03885, 'size': 0.00025997}...
-
-One more example from September 3 morning, when buying price dropped and recovered:
-2025-09-03 07:23:18.802576200+00:00  ... {'price': 0.0389, 'size': 0.00287763}, {'price': 0.03885, 'size': 0.00025997}, 
-{'price': 0.0388, 'size': 0.01061054}, {'price': 0.0387, 'size': 0.00287958},
-
-2025-09-03 07:41:41 {'price': 0.0388, 'size': 0.00365465}, {'price': 0.0387, 'size': 0.00287958},
-
-2025-09-03 10:26:40 {'price': 0.0391, 'size': 0.00077489}, {'price': 0.0389, 'size': 0.00025964}, {'price': 0.03885, 'size': 0.00025997}, {'price': 0.0388, 'size': 0.00151792}... 
-
-It is strange that many bids were placed at the same price levels after previous removing.
+### Step between price-levels in asks and bids.
+It was noticed (figure 5) that some adjasent asks-lines have approximately the same distances between each other as well as bid-lines. The ask- and bid-lists were checked to clarify if they had the same step between adjasent price levels. It appeared they had, but also one identical step (5.000000000000143e-05) was noticed both in asks and bids. This step is the most frequently repeated one in ask-lists and the second frequenly repeated step in bid-lists. Most likely it means that more than a half of asks (those that have a repeated step between each other) and 20 out of 50 of bids at almost every timestamp were created by the same participant.
+![figure 6: Most frequently repeated steps between price levels in asks- and bid-lists](step between price levels.jpg)
 
 ### Simultaneous changes in bid- and ask-lists.
-One more strange pattern was noticed: there are 9 significant simultaneous shifts of bid- and ask-lines (picture 5). 6 of them can be caused by a significant market price change. But at least 3 simultaneous shifts (at around 4a.m, between 1p.m. - 2p.m. and at around 5 p.m. on September 1) can't be explained by the market price movement, because there are less significant price changes at these timestamps than at many other ones.
+One more strange pattern was noticed. Most of the time the majority of bid- and ask-lines at figure 5 are parallel to the time axis, which means there are no changes in these price levels of ask- and bid-lists. But there are at least 10 simultaneous shifts of majority of bid- and ask-lines which means there are 10 simultaneous changes in lists of asks and bids. They correlate with the buying price, but sometimes not simultaneously with price movement, but simultaneously with each other, for example at around 4a.m, between 1p.m. - 2p.m. and at around 5 p.m. on September 1. It strengthens the hypothesis from the previous paragraph.
 
 ## Conclusion
 My suggestion is it was artificial trading and orderbook manipulation.
