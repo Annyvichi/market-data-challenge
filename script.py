@@ -13,9 +13,19 @@ orders['bids'] = orders['bids'].apply(ast.literal_eval)
 trades['timestamp'] = pd.to_datetime(trades['timestamp'])
 orders['timestamp'] = pd.to_datetime(orders['timestamp'])
 
+orders['best_price_asks'] = None
+orders['best_price_bids'] = None
+orders['average_price_asks'] = None
+asks_price_i = []
+bids_price_i = []
 for i, row in orders.iterrows():
     print(len(row['asks']))
     print(len(row['bids']))
+    for j in row['asks']:
+        asks_price_i.append(j['price'])
+    orders.loc[i, 'best_price_asks'] = np.min(asks_price_i)
+    orders.loc[i, 'average_price_asks'] = np.mean(asks_price_i)   
+    asks_price_i = []
 
 def draw_graphs(nrows, ncols, data, side):
     prices = []
@@ -69,29 +79,42 @@ buy_trades_exceeding_10ETH = buy_trades[buy_trades['size'] > 10]
 print("number of buy-trades less than 10ETH:", len(buy_trades_less_10ETH), ", volume:", np.sum(buy_trades_less_10ETH['size']))
 print("number of buy-trades exceeding 10ETH:", len(buy_trades_exceeding_10ETH), ", volume:", np.sum(buy_trades_exceeding_10ETH['size']))
 
-orders['best_price_asks'] = None
-orders['best_price_bids'] = None
-orders['average_price_asks'] = None
-asks_price_i = []
-bids_price_i = []
-for _, row in buy_trades.iterrows():
-    for i, item in orders.iterrows():
-        if (row['timestamp'] - item['timestamp']).seconds == 86399:
-            print("time of trade:", row['timestamp'])
-            print("time of snapshot:", item['timestamp'])
-            print("time interval (should be checked manually due to the split-second difference between the trade-file and the orderbook): 0 or 86399sec")
-            print("size of trade:", row['size'], "ETH")
-        elif (row['timestamp'] - item['timestamp']).days == 0:
-            if (row['timestamp'] - item['timestamp']).seconds <= 10:
-                print("time of trade:", row['timestamp'])
-                print("time of snapshot:", item['timestamp'])
-                print("time interval:", (row['timestamp'] - item['timestamp']).seconds, "sec.")
-                print("size of trade:", row['size'], "ETH")
-        for j in item['asks']:
-           asks_price_i.append(j['price'])
-        orders.loc[i, 'best_price_asks'] = np.min(asks_price_i)
-        orders.loc[i, 'average_price_asks'] = np.mean(asks_price_i)   
-        asks_price_i = []
+def list_count (lst, first_n):
+    lst_count = Counter(lst)
+    lst_count = sorted(lst_count.items(), key=lambda item: item[1], reverse=True)
+    short_list = lst_count[:first_n]
+    return short_list
+
+def time_interval (trades, max_interval, first_n_intervals):
+    time_intervals = []
+    for _, row in trades.iterrows():
+        for i, item in orders.iterrows():
+            if (row['timestamp'] - item['timestamp']).seconds == 86399:
+                if max_interval <= 10: 
+                    print("time of trade:", row['timestamp'])
+                    print("time of snapshot:", item['timestamp'])
+                    print("time interval (should be checked manually due to the split-second difference between the trade-file and the orderbook): 0 or 86399sec")
+                    print("size of trade:", row['size'], "ETH")
+                    print("price of trade:", row['price'], "ETH/BTC")
+                else:
+                    time_intervals.append((row['timestamp'] - item['timestamp']).seconds) 
+            elif (row['timestamp'] - item['timestamp']).days == 0:
+                if (row['timestamp'] - item['timestamp']).seconds <= max_interval:
+                    if max_interval <= 10:
+                        print("time of trade:", row['timestamp'])
+                        print("time of snapshot:", item['timestamp'])
+                        print("time interval:", (row['timestamp'] - item['timestamp']).seconds, "sec.")
+                        print("size of trade:", row['size'], "ETH")
+                        print("price of trade:", row['price'], "ETH/BTC")
+                    else:
+                        time_intervals.append((row['timestamp'] - item['timestamp']).seconds)
+    prevailing_intervals = list_count(lst=time_intervals, first_n=first_n_intervals)
+    return prevailing_intervals
+
+time_interval(trades=buy_trades, max_interval=10, first_n_intervals=None)
+time_interval(trades=sell_trades, max_interval=10, first_n_intervals=None)
+#print(time_interval(trades=buy_trades, max_interval=1000, first_n_intervals=20))
+#print(time_interval(trades=sell_trades, max_interval=1000, first_n_intervals=20))
 
 fig, ax = plt.subplots(nrows=1, ncols=1,  figsize=(18,12))
 plt.suptitle("Price in buy-trades compared to best and average ask-price from snapshots")
@@ -112,10 +135,10 @@ ask_prices = np.ones((50, len(orders)), float)
 bid_prices = np.ones((50, len(orders)), float)
 for i, item in orders.iterrows():
     for n, value in enumerate(item['asks']):
-        asks_price_i.append(value['price'])
+#        asks_price_i.append(value['price'])
         ask_prices[n][i] = value['price']
     for m, val in enumerate(item['bids']):
-        bids_price_i.append(val['price'])
+#        bids_price_i.append(val['price'])
         bid_prices[m][i] = val['price']
     asks_price_i = []
     bids_price_i = []
@@ -136,18 +159,15 @@ ax.grid()
 ax.tick_params(axis='both', which='major', labelsize=6)
 plt.show()
 
-def step_count(lst):
+def step_count(lst, first_n_steps):
     step = []
     steps = []
     for m in range(len(lst)):
         for k in range(50):
             if k > 0:
                 step.append(lst[k-1][m] - lst[k][m])
-        step_count = Counter(step)
-        step_count = sorted(step_count.items(), key=lambda item: item[1], reverse=True)
-        prevailing_steps = step_count[:5]
-        steps.append(dict(prevailing_steps))
+        steps.append(dict(list_count(lst=step, first_n=first_n_steps)))
         step = []
     return steps            
-print(step_count(lst=ask_prices))            
-print(step_count(lst=bid_prices))
+print(step_count(lst=ask_prices, first_n_steps=6))            
+print(step_count(lst=bid_prices, first_n_steps=6))
