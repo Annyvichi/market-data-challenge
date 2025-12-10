@@ -27,7 +27,7 @@ for i, row in orders.iterrows():
     orders.loc[i, 'average_price_asks'] = np.mean(asks_price_i)   
     asks_price_i = []
 
-def draw_graphs(nrows, ncols, data, side):
+def distribution_graphs(nrows, ncols, data, side):
     prices = []
     sizes = []
     fig, axes = plt.subplots(nrows, ncols, sharex=True,  sharey=True, figsize=(40,24))
@@ -48,13 +48,13 @@ def draw_graphs(nrows, ncols, data, side):
     axes[47].tick_params(labelsize=6)
     plt.show()
 
-draw_graphs(nrows=8, ncols=6, data=orders, side='asks')
-draw_graphs(nrows=8, ncols=6, data=orders, side='bids')
+distribution_graphs(nrows=8, ncols=6, data=orders, side='asks')
+distribution_graphs(nrows=8, ncols=6, data=orders, side='bids')
 orders_trade16_33deleted = orders[orders.timestamp != '2025-09-03 16:33:30.943424800+00:00']
 orders_trade16_33deleted = orders_trade16_33deleted.reset_index(drop=True)
 print(orders['asks'][181:])
 print(orders_trade16_33deleted['asks'][181:])
-draw_graphs(nrows=8, ncols=6, data=orders_trade16_33deleted, side='asks')
+distribution_graphs(nrows=8, ncols=6, data=orders_trade16_33deleted, side='asks')
 
 buy_trades = trades[trades['side'] == 'BUY']
 sell_trades = trades[trades['side'] == 'SELL']
@@ -79,7 +79,7 @@ buy_trades_exceeding_10ETH = buy_trades[buy_trades['size'] > 10]
 print("number of buy-trades less than 10ETH:", len(buy_trades_less_10ETH), ", volume:", np.sum(buy_trades_less_10ETH['size']))
 print("number of buy-trades exceeding 10ETH:", len(buy_trades_exceeding_10ETH), ", volume:", np.sum(buy_trades_exceeding_10ETH['size']))
 
-def list_count (lst, first_n):
+def list_elements_count (lst, first_n):
     lst_count = Counter(lst)
     lst_count = sorted(lst_count.items(), key=lambda item: item[1], reverse=True)
     short_list = lst_count[:first_n]
@@ -108,13 +108,12 @@ def time_interval (trades, max_interval, first_n_intervals):
                         print("price of trade:", row['price'], "ETH/BTC")
                     else:
                         time_intervals.append((row['timestamp'] - item['timestamp']).seconds)
-    prevailing_intervals = list_count(lst=time_intervals, first_n=first_n_intervals)
+    prevailing_intervals = list_elements_count(lst=time_intervals, first_n=first_n_intervals)
     return prevailing_intervals
 
 time_interval(trades=buy_trades, max_interval=10, first_n_intervals=None)
 time_interval(trades=sell_trades, max_interval=10, first_n_intervals=None)
-#print(time_interval(trades=buy_trades, max_interval=1000, first_n_intervals=20))
-#print(time_interval(trades=sell_trades, max_interval=1000, first_n_intervals=20))
+
 
 fig, ax = plt.subplots(nrows=1, ncols=1,  figsize=(18,12))
 plt.suptitle("Price in buy-trades compared to best and average ask-price from snapshots")
@@ -135,10 +134,8 @@ ask_prices = np.ones((50, len(orders)), float)
 bid_prices = np.ones((50, len(orders)), float)
 for i, item in orders.iterrows():
     for n, value in enumerate(item['asks']):
-#        asks_price_i.append(value['price'])
         ask_prices[n][i] = value['price']
     for m, val in enumerate(item['bids']):
-#        bids_price_i.append(val['price'])
         bid_prices[m][i] = val['price']
     asks_price_i = []
     bids_price_i = []
@@ -160,14 +157,27 @@ ax.tick_params(axis='both', which='major', labelsize=6)
 plt.show()
 
 def step_count(lst, first_n_steps):
+    steps_dicts = []
+    steps = [[0]*(len(ask_prices)-1)]*len(ask_prices[0])
+    for level in range(len(lst)):
+        for timestamp_number in range(len(lst[level])):
+            if level > 0:
+                steps[timestamp_number][level-1] = lst[level][timestamp_number] - lst[level-1][timestamp_number]
+    for x in steps:
+        steps_dicts.append(dict(list_elements_count(lst=x, first_n=first_n_steps)))
+    return steps_dicts           
+print(f"ask-steps: {step_count(lst=ask_prices, first_n_steps=7)}")             
+print(f"bid-steps: {step_count(lst=bid_prices, first_n_steps=7)}")
+
+def check_added_price_levels(timestamp, steps_number):
+    timestamp_filter = orders[orders['timestamp'] == timestamp].index
+    check_list = ask_prices[:, timestamp_filter]
+    check_list = np.ravel(check_list)
     step = []
-    steps = []
-    for m in range(len(lst)):
-        for k in range(50):
-            if k > 0:
-                step.append(lst[k-1][m] - lst[k][m])
-        steps.append(dict(list_count(lst=step, first_n=first_n_steps)))
-        step = []
-    return steps            
-print(step_count(lst=ask_prices, first_n_steps=6))            
-print(step_count(lst=bid_prices, first_n_steps=6))
+    for i in range(len(check_list)):
+        if 0 < i < steps_number:
+            step.append(check_list[i] - check_list[i-1])
+        steps = dict(list_elements_count(lst=step, first_n=10))
+    return steps
+print(check_added_price_levels(timestamp='2025-09-02 21:18:41.353813900+00:00', steps_number=20))
+print(check_added_price_levels(timestamp='2025-09-01 21:32:25.097563600+00:00', steps_number=20))

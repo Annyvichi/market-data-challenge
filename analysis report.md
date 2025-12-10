@@ -14,12 +14,12 @@ After looking for it in the 'eth-btc-trades.csv' it was found out that this aks-
 It can be seen at the next picture how the ask-distribution looks when '16:33:30'-snapshot is deleted.
 ![figure 3: Distribution of ask-orders sizes with '16:33:30'-snapshot deleted](orderbook_ask_distr_16_33deleted.png)
 
-The next step was checking the max-values of buy- and sell-trades as well as their distribution.
+The next step was checking the max-values of buy- and sell-trades as well as their volume.
 There were 720 BUY-trades and 125 sell-trades totally.
 
 max sell-trade: 0.19106776 ETH;  total volume of sell-trades: 0.9603567500000002 ETH
 max buy-trade: 687.32918 ETH;  total volume of buy-trades: 168297.80241572 ETH
-Buy-volume is 1.7*10 times more than sell-volume.
+Buy-volume is 1.7*10^5 times more than sell-volume.
 
 The distribution of buy-trades:
 number of buy-trades less than 0.01ETH: 36 , volume: 0.04649978
@@ -36,7 +36,7 @@ number of buy-trades exceeding 10ETH: 678 , volume: 168290.181124
 
 It turns out almost all buy-trades exceeding 10 ETH are out the snapshots (all but the abovementioned '16:33:30'-trade). 
 
-Then it is necessary to check whether there were other similar cases, for example, when a snapshot was taken less than 10 seconds before any trade was executed.
+Then it is necessary to check whether there were other similar cases, for example, when a snapshot was taken less than 10 seconds before any buy-trade was executed.
 
 4 buy-cases were discovered:
 time of trade: 2025-09-02 01:11:34+00:00
@@ -61,24 +61,24 @@ size of trade: 119.4285 ETH
 
 The 4th transaction was made in less than 2 seconds after creating an ask-order, because there is no ask-order of this size in the 07:23:18-snapshot. The 1st, 2nd and 3rd transactions were made in less than 7 - 8 seconds.
 
-There are no similar cases in sell-trades.
+There are no similar cases in sell-trades: there are 2 cases when a snapshot was taken less than 10 seconds before, but a required bid was found in both of them. Also 2 sell-trades were checked randomly - both were idendified in previous snapshots.
 
 The conclusion of this paragraph: 
-1) 678 buy-trades exceeding 10 ETH are out of snapshots, 
-2) there were 4 cases when a buy-transaction could be caught in a snapshot taken a few seconds before, but wasn't,
-3) the only case when a snapshot was made in splits of seconds after a buy-trade was execuded showed that the only large ask recorded in snapshots was bought out almost instantly. 
-I think it is sound to say that prevailed majority of buy-trades was most likely executed within seconds or splits of seconds after placing orders.
-The situation with sell-trades will be considered in next paragraphs.
+1) 678 buy-trades exceeding 10 ETH are out of snapshots, only one buy-transaction was caught in snapshots - the one executed in splits of a second; 
+2) there were 4 cases when a buy-transaction could be caught in a snapshot taken a few seconds before, but it didn't happen, so those buy-transactions were executed very quickly.
+I think it is safe to say that the majority of buy-trades was executed within seconds or splits of seconds after placing orders.
 
-### 3. Price in buy-trades against the best and average ask-price from orderbook's snapshots.
+### 3. Buy-trades prevailed, but the price was mostly falling.
 If 677 out of 678 buy-transactions exceeding 10ETH were executed so quickly that they were out of the orderbook's snapshots the quiestion is: what was their price? Was it always the best price?
 The picture below shows the best (green line) and the average (blue line) ask-price from the orderbook's snapshots against the actual price of the buy-trades (red lines).
 ![figure 4: Price in buy-trades compared to best and average ask-price from snapshots](price.png)
-The actual buy-price is really better than what can be seen in the orderbook's snapshots most of the time. Though it looks like guys with the best price are always so close while the price is falling till 9 a.m. September 3 with buy-trades prevailing. It seems reasonable to check ask-prices on higher levels. But the suspicious part here is this: if selling ETH was so successful that all huge offers were bought so quickly, why not to try to sell it at a higher price - place an order into the orderbook and wait for a while? Not even once out of 678 times?
+The actual buy-price is better than what can be seen in the orderbook's snapshots most of the time. Though the best-price-line is always so close to the buying price while this price moving contradicts normal market behaviour because buy-trades significanly prevail. It seems reasonable to check ask-prices on higher levels in the following paragraphs.
 
-### 4. Ask- and bid-prices from orderbook's snapshots compared to each other.
-To explore the premice from the previous paragraph, all 50 asks and 50 bids (as it was mentioned in the beginning the lenght of orderbook's lists is 50) at every timestamp were visualized. The lowest ask-line (light blue) is the best ask-price at different timestampes, the highest ask-line is the least competitive ask-price. And it's vice versa with the bid-lines (yellow).
-![figure 5: Bid-prices against the actual sell-price](bid-prices.png)
+The suspicious pattern found in this paragraph: if selling ETH was so successful that all huge offers were bought so quickly, why not to try to sell it at a higher price - place an order into the orderbook and wait for a while? Not even once out of 678 times?
+
+### 4. Orderbook lists are truncated at the end.
+To explore the premice of the previous paragraph, all 50 asks and 50 bids (as it was mentioned in the beginning the lenght of orderbook's lists is 50) at every timestamp were visualized. The lowest ask-line (light blue) is the best ask-price at different timestampes, the highest ask-line is the least competitive ask-price. And it's vice versa with the bid-lines (yellow).
+![figure 5: Ask- and bid-prices against the actual buy- and sell-price](ask bid prices against buy sell.png)
 
 It can be seen that ask-lines and bid-lines shift relative to some level from time to time, almost all of them. It is because the majority of asks and bids is mostly the same, so for example when a new ask is added to a list which is almost the same (or removed from a list) - all higher ask-offers shift on one level.
 But ask- and bid-lines shift back to the same levels from time to time as well.
@@ -92,7 +92,7 @@ To explain this observation it is interesting to consider the following asks fro
 
 This part "{'price': 0.04192, 'size': 0.00024652}" is common for every timestamp. But for 03:07 timestamp it is the ending (the last 50th ask). Whereas in 14:54 timestamp there are higher price levels. And at 19:55 these levels are back again. Actually not just price levels but  absolutely identical asks: {'price': 0.04197, 'size': 0.00024694}, {'price': 0.04197577, 'size': 0.01199991}, {'price': 0.042, 'size': 0.00474414}, {'price': 0.04202, 'size': 0.00023971}, {'price': 0.04207, 'size': 0.00023942}, {'price': 0.0421, 'size': 0.0025}.
 
-It is unlike normal market behaviour, but it is very likely that this is the part where the orderbook was truncated: from the ending of the lists.
+It is very likely that this is where orderbook lists were truncated: at the end.
 
 Bid-prices from snapshots:
 2025-09-01 03:52:04 ... {'price': 0.0377, 'size': 0.00311485}, {'price': 0.03763159, 'size': 0.02189266}, {'price': 0.0376, 'size': 0.00438429}]"
@@ -102,28 +102,42 @@ Bid-prices from snapshots:
 2025-09-01 08:07:49 ... {'price': 0.0377, 'size': 0.00311485}, {'price': 0.03763159, 'size': 0.02189266}]"
 
 2025-09-01 14:32:14 ... {'price': 0.0377, 'size': 0.00311485}, {'price': 0.03763159, 'size': 0.02189266}, {'price': 0.0376, 'size': 0.00438429}, {'price': 0.03759, 'size': 0.00205824}]"
+
 The list is truncated at 05:05 and partially at 08:07-snapshot, but at 03:52 and 14:32 longer versions can be seen.
-The same pattern can be observed at figure 5 between September 1 11p.m. and September 2 02a.m., also on September 2 between 06a.m. and 01p.m.(I checked the lists - they are truncated in the same way). So bid-lists the same as ask-lists are truncated from the ending.
+The same pattern can be checked at timeframes between 11p.m. September 1 - 2a.m. September 2 and 6a.m. - 1p.m. September 2 (I checked the lists - it's the same). So bid-lists the same as ask-lists are truncated at the end. 
 
-### 5. The same trend that contradicts normal market behaviour is discovered bouth in the trades-file and orderbook.
-Also it was noticed (figure 5) that not just best ask-prices but many ask-prices on different levels were falling till 9a.m. September 3. It contradicts normal market behaviour, where price is rising if buying-trades significantly prevail. 
+### 5. The same trend that contradicts normal market behaviour is discovered both in the trades-file and orderbook.
+It can be seen (figure 5) that not just best ask-prices followed the buying price moving, but also many asks were added at price levels that followed the same trend at the timeframe from 9p.m September 1 till 9a.m. September 3. It contradicts normal market behaviour, where price is rising if buying-trades significantly prevail.
 
-### 6. Step between price-levels in asks and bids.
-Some adjasent asks-lines (figure 5) have approximately the same distances between each other as well as bid-lines. The ask- and bid-lists were checked to clarify if they had the same step between adjasent price levels. It appeared they had, but also one identical step (5.000000000000143e-05) was noticed both in asks and bids. This step is the most frequently repeated one in ask-lists and the second frequenly repeated step in bid-lists. 
-![figure 6: Most frequently repeated steps between price levels in asks- and bid-lists](step between price levels.jpg)
+### 6. Many steps between price-levels in asks and bids are repeated.
+Some adjasent asks-lines (figure 5) have approximately the same distances between each other as well as bid-lines. The ask- and bid-lists were checked to see if the step between adjasent price levels was indeed the same in many cases. It turned out this was the case, but I also discovered that 3 steps were repeated in both asks and bids.  
+![figure 6: Most frequently repeated steps between price levels in ask-lists](ask price levels steps.jpg)
+![figure 6: Most frequently repeated steps between price levels in bid-lists](bid price levels steps.jpg)
 
-Most likely it means that more than a half of asks (those that have a repeated step between each other) and 20 out of 50 of bids at almost every timestamp were created by the same participant.
-But if we look at ask-lines at 9p.m September 1 - 9a.m. September 3, there are many asks with a price following the falling trend added and a step between many of these ask-lines is repeated (for example snapshot 2025-09-01 21:14:09.411221300+00:00, step between levels 3, 5, 6, 7, 8, 9, 9, 10, 11, 12). Then it means that the asks whose existence contradicts normal market behaviour (paragraph 5) were most likely created by that participant.
+Most likely it means that 26 out of 50 asks (those that have a repeated step between each other) and 24 out of 50 of bids at every timestamp were created by the same participant.
+Now if we look at the ask-lines between 9p.m September 1 - 9a.m. September 3 considered in the previous paragraph, a step between many of them is repeated (for example, steps between levels 0 - 13 and 0 - 20 were checked in script.py for snapshots 2025-09-01 21:32:25 and 2025-09-02 21:18:41 respectively). Therefore many of the asks whose existence contradicts normal market behaviour were most likely created by the abovementioned participant.
 
-### 7. Step between sell-price and best bid-price.
-There are 7 events noticed at figure 5, where sell-price was very close or equal to buy-price: between 7 -8a.m and 8 - 9 p.m. on September 1, between 1 - 2p.m., 3 - 5p.m. and 6 - 7p.m on September 2 and between 7 - 8 a.m. and 0 - 1a.m. on September 3. It turned out there were multiple sell-trades at those timestamps, these events were placed into "big sell-events.csv"-file along with adjasent buy-trades. It turned out those buy-prices are lower or equal to corresponding sell-prices. It can be normal during periods of high volatility, but here these transactions are 78.8% of the total volume of sell-trades. There are even 3 cases (46.6% of the total volume of sell-trades) where difference between sell-price and best bid-price is many times more than an average step between bid-price levels: between 7 -8a.m, 1 - 2 p.m. on September 1 and between 0 -1a.m. on September 3. Why steps between sell-price and best bid-price are so big? If they were a few times less it still would be the best bid-prices but also more profitable trades.
+### 7. Sell-trades amounting to 46% of the total sell-volume were carried ot at a less favourable price than they could have been.
+There are 3 sell-cases (they were found visually at figure 5 and identified in the trade-file and orderbook) with volume of 46.6% of the total sell-volume where difference between sell-price and best bid-price is many times more than an average step between bid-price levels: 
+2025-09-01 07:22:53+00:00,0.04096094,0.011677,SELL
+2025-09-01 07:22:55+00:00,0.04096094,0.02023365,SELL
+2025-09-01 07:22:57+00:00,0.04096094,0.19106776,SELL
 
-### 8.
-Not only asks' prices on many levels followed the falling trend, but also bids'prices on many levels, which is very much like normal market behaviour, but again, there were bid-lines with repeated steps on levels that were removed after price falling. So removing those lines wasn't natural behaviour.
+2025-09-02 01:16:00+00:00,0.03978426,0.01407185,SELL
+
+2025-09-03 12:22:27+00:00,0.03947808,0.00245322,SELL
+2025-09-03 12:22:27+00:00,0.03947808,0.12188391,SELL
+2025-09-03 12:22:30+00:00,0.03947808,0.07891418,SELL
+2025-09-03 12:22:31+00:00,0.03947808,0.00772631,SELL
+
+It is worth noting that even if the difference was much smaller these would still be the best bid-prices, but also the trades would be more profitable.
+
+### 8. Simultaneous changes in bid- and ask-lists.
+One more strange pattern was noticed. Most of the time the majority of bid- and ask-lines at figure 5 are parallel to the time axis, which means there are no changes in these price levels of ask- and bid-lists. But there are at least 10 simultaneous shifts of majority of bid- and ask-lines which means there are 10 simultaneous changes in lists of asks and bids. Most of them coinside in time with a sharp change in buying price, but some do not coinside with the price movement and coinside only with each other: for example at around 4a.m, between 1p.m. - 2p.m. and at around 5 p.m. on September 1. It strengthens the assumption that many actions in the orderbook were performed by the same participant.
+
+### 8. Additional notes.
+Not only ask-prices on many levels followed the buying-price movements, but also bid-prices on several levels, which is very much like normal market behaviour, but again, there were bid-lines with repeated steps on levels that were removed after price falling. So removing those bids was executed by the same abovementioned participant.
 Moreover it was found out, that some of the removed bids, were placed back at exactly the same price levels later when price recovered. But it should be checked by exploring more orderbooks whether this behaviour pattern is normal or not in the market.  
 
-### 7. Simultaneous changes in bid- and ask-lists.
-One more strange pattern was noticed. Most of the time the majority of bid- and ask-lines at figure 5 are parallel to the time axis, which means there are no changes in these price levels of ask- and bid-lists. But there are at least 10 simultaneous shifts of majority of bid- and ask-lines which means there are 10 simultaneous changes in lists of asks and bids. They correlate with the buying price, but sometimes not simultaneously with price movement, but simultaneously with each other, for example at around 4a.m, between 1p.m. - 2p.m. and at around 5 p.m. on September 1. It strengthens the hypothesis from the paragraph 5.
-
 ## Conclusion
-There was a market participant who placed at least half of asks and almost half of bids and added and removed many asks and bids according to the buying price movement. The volume on the buying side was 99.9%, but the price, overall, was falling.
+There was a market participant who placed at least half of asks and almost half of bids and added and removed many asks and bids following the buying price movement. But this movement contradicted normal market behaviour because the price was mostly falling, while the volume on the buying side was 99.9%. Therefore it can be assumed that there was a connection between trading and orderbook filling.
