@@ -36,7 +36,7 @@ number of buy-trades exceeding 10ETH: 678 , volume: 168290.181124
 
 It turns out almost all buy-trades exceeding 10 ETH are out the snapshots (all but the abovementioned '16:33:30'-trade). 
 
-Then it is necessary to check whether there were other similar cases, for example, when a snapshot was taken less than 10 seconds before any buy-trade was executed.
+Then it was checked if there were any more cases when a snapshot was taken less than 10 seconds before any buy-trade was executed.
 
 4 buy-cases were discovered:
 time of trade: 2025-09-02 01:11:34+00:00
@@ -63,10 +63,26 @@ The 4th transaction was made in less than 2 seconds after creating an ask-order,
 
 There are no similar cases in sell-trades: there are 2 cases when a snapshot was taken less than 10 seconds before, but a required bid was found in both of them. Also 2 sell-trades were checked randomly - both were idendified in previous snapshots.
 
-The conclusion of this paragraph: 
-1) 678 buy-trades exceeding 10 ETH are out of snapshots, only one buy-transaction was caught in snapshots - the one executed in splits of a second; 
-2) there were 4 cases when a buy-transaction could be caught in a snapshot taken a few seconds before, but it didn't happen, so those buy-transactions were executed very quickly.
-I think it is safe to say that the majority of buy-trades was executed within seconds or splits of seconds after placing orders.
+Now it is necessary to explore the meaning of this finding.
+We have 188 snapshots (the length of the orderbook is 188) and 720 buy-trades. 2 of those trades almost coinside in time with snapshots (the time interval is within 2 seconds). These 2 transactions can be considered chosen randomly. The question is what is the probability of the case when 2 randomly chosen trades are executed in less than 2 seconds while the majority of trades is executed in more than 2 seconds?
+
+Let's assume that 80% which is 576 of buy-trades  were executed in more than 2 seconds after placing an order and 20% which is 144 trades - in less than 2 seconds. According to the classical definition of probability and taking into account the formula for the number of combinations, we obtain that probability of having two randomly chosen trades being executed in less than 2 seconds is:
+p = (144!/((144-2)!*2!))*(576!/((576-0)!*0!))/(720!/((720-2)!)*2!)=0.0398, which is about 4%.
+Therefore we can say with 96%-probability that 20% of buy-trades were executed within 2 seconds after placing orders.
+
+Let's assume that 50% which is 360 of buy-trades were executed in more than 2 seconds and 50% which is 360 trades - in less than 2 seconds. Then probability of having two randomly chosen trades being executed in less than 2 seconds is:
+p = (360!/((360-2)!*2!))*(360!/((360-0)!*0!))/(720!/((720-2)!)*2!)=0.2497, which is about 25%.
+Therefore we can say with 75%-probability that 50% of buy-trades were executed within 2 seconds after placing orders.
+
+Now the same will be done with all 5 abovementioned cases in which 5 trades are executed in less than 8 seconds after placing orders.
+
+Let's assume that 75% which is 540 of buy-trades were executed in more than 8 seconds and 25% which is 180 trades - in less than 8 seconds. Then probability of having five randomly chosen trades being executed in less than 8 seconds is:
+p = (180!/((180-5)!*5!))*(540!/((540-0)!*0!))/(720!/((720-5)!)*5!)=0.00093, which is about 0.09%.
+Therefore we can say with 99.91%-probability that 25% of buy-trades were executed within 8 seconds after placing orders.
+
+If we assume that 36.8% which is 265 of buy-trades were executed in more than 8 seconds and 63.2% which is 455 trades - in less than 8 seconds, then probability of having five randomly chosen trades being executed in less than 8 seconds is:
+p = (455!/((455-5)!*5!))*(265!/((265-0)!*0!))/(720!/((720-5)!)*5!)=0.09997, which is about 10%.
+Therefore we can say with 90%-probability that 63.2% of buy-trades were executed within 8 seconds after placing orders.
 
 ### 3. Buy-trades prevailed, but the price was mostly falling.
 If 677 out of 678 buy-transactions exceeding 10ETH were executed so quickly that they were out of the orderbook's snapshots the quiestion is: what was their price? Was it always the best price?
