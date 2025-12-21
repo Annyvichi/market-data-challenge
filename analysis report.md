@@ -59,30 +59,11 @@ time of snapshot: 2025-09-03 07:23:18.802576200+00:00
 time interval: 2 sec.
 size of trade: 119.4285 ETH
 
-The 4th transaction was made in less than 2 seconds after creating an ask-order, because there is no ask-order of this size in the 07:23:18-snapshot. The 1st, 2nd and 3rd transactions were made in less than 7 - 8 seconds.
+The 4th transaction was made in 2 seconds after creating an ask-order, because there is no ask-order of this size in the 07:23:18-snapshot. The 1st, 2nd and 3rd transactions were made in 7 - 8 seconds.
 
-There are no similar cases in sell-trades: there are 2 cases when a snapshot was taken less than 10 seconds before, but a required bid was found in both of them. Also 2 sell-trades were checked randomly - both were idendified in previous snapshots.
+There are no similar cases in sell-trades: 2 cases when a snapshot was taken less than 10 seconds before were discovered, but a required bid was found in both of them. Also 2 sell-trades were checked randomly - both were idendified in previous snapshots.
 
-Now it is necessary to explore the meaning of this finding.
-We have 188 snapshots (the length of the orderbook is 188) and 720 buy-trades. 2 of those trades almost coinside in time with snapshots (the time interval is within 2 seconds). These 2 transactions can be considered chosen randomly. The question is what is the probability of the case when 2 randomly chosen trades are executed in less than 2 seconds while the majority of trades is executed in more than 2 seconds?
-
-Let's assume that 80% which is 576 of buy-trades  were executed in more than 2 seconds after placing an order and 20% which is 144 trades - in less than 2 seconds. According to the classical definition of probability and taking into account the formula for the number of combinations, we obtain that probability of having two randomly chosen trades being executed in less than 2 seconds is:
-p = (144!/((144-2)!*2!))*(576!/((576-0)!*0!))/(720!/((720-2)!)*2!)=0.0398, which is about 4%.
-Therefore we can say with 96%-probability that 20% of buy-trades were executed within 2 seconds after placing orders.
-
-Let's assume that 50% which is 360 of buy-trades were executed in more than 2 seconds and 50% which is 360 trades - in less than 2 seconds. Then probability of having two randomly chosen trades being executed in less than 2 seconds is:
-p = (360!/((360-2)!*2!))*(360!/((360-0)!*0!))/(720!/((720-2)!)*2!)=0.2497, which is about 25%.
-Therefore we can say with 75%-probability that 50% of buy-trades were executed within 2 seconds after placing orders.
-
-Now the same will be done with all 5 abovementioned cases in which 5 trades are executed in less than 8 seconds after placing orders.
-
-Let's assume that 75% which is 540 of buy-trades were executed in more than 8 seconds and 25% which is 180 trades - in less than 8 seconds. Then probability of having five randomly chosen trades being executed in less than 8 seconds is:
-p = (180!/((180-5)!*5!))*(540!/((540-0)!*0!))/(720!/((720-5)!)*5!)=0.00093, which is about 0.09%.
-Therefore we can say with 99.91%-probability that 25% of buy-trades were executed within 8 seconds after placing orders.
-
-If we assume that 36.8% which is 265 of buy-trades were executed in more than 8 seconds and 63.2% which is 455 trades - in less than 8 seconds, then probability of having five randomly chosen trades being executed in less than 8 seconds is:
-p = (455!/((455-5)!*5!))*(265!/((265-0)!*0!))/(720!/((720-5)!)*5!)=0.09997, which is about 10%.
-Therefore we can say with 90%-probability that 63.2% of buy-trades were executed within 8 seconds after placing orders.
+So all five cases when a snapshot was taken in less than 10 seconds before a buy-trade was executed show that those trades were made in a very short time interval after creating an order. This finding is not enough to make any conclusion, but further exploration is needed.
 
 ### 3. Buy-trades prevailed, but the price was mostly falling.
 If 677 out of 678 buy-transactions exceeding 10ETH were executed so quickly that they were out of the orderbook's snapshots the quiestion is: what was their price? Was it always the best price?
